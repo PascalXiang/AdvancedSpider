@@ -9,8 +9,11 @@ headers = {
 response = requests.get(url, headers=headers)
 response.encoding = "utf-8"
 tree = etree.HTML(response.text)
-divs = tree.xpath("//div[@class='search-result-list-service']/div")
+divs = tree.xpath("//div[@class='search-result-list-service']//div")
 price = []
+name = []
 for div in divs:
+    name = div.xpath("//div[@class='shop-info text-overflow-line']/text()")
     price = div.xpath("//div[@class='bot-content']/div[1]/span/text()")
-print(price)
+    name = "".join(name)
+print(name)
