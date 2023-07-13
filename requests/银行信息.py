@@ -25,7 +25,7 @@ for i in range(1, 100):
             "B": num.text.strip()
         })
     j = j + 1
-    print(data_list)
+    print(j)
 
 # 添加表头
 worksheet.append(["Name", "Number"])
