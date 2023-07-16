@@ -31,7 +31,11 @@ async def main():
         asyncio.create_task(f2),
         asyncio.create_task(f3)
     ]
-    await asyncio.wait(tasks)
+    # done,pending = await asyncio.wait(tasks)    # 无顺序返回
+    # gather和wait的区别：gather返回值是有顺序（按照你添加任务的顺序进行返回）
+    result = await asyncio.gather(*tasks,return_exceptions=True)    # return_exceptions=True 如果有错误信息，返回错误信息其他任务正常执行。
+    for i in result:
+        print(i.result())
 
 if __name__ == '__main__':
     asyncio.run(main())
