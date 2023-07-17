@@ -21,9 +21,8 @@ async def func3():
 
 
 async def main():
-    tasks = [func1(), func2(), func3()]
-    task = asyncio.create_task(tasks)
-    await asyncio.wait(task)
+    task_list = [asyncio.create_task(func1()), asyncio.create_task(func2()), asyncio.create_task(func3())]
+    await asyncio.wait(task_list)
 
 
 if __name__ == '__main__':
