@@ -3,8 +3,9 @@ from concurrent.futures import ThreadPoolExecutor
 from lxml import etree
 import time
 
+f = open("data.scv", mode="w", encoding="utf-8")
 
-f = open("data.scv",mode="w",encoding="utf-8")
+
 def download(url):
     new_url = "http://www.xinfadi.com.cn/getPriceData.html"
     res = requests.post(new_url, headers=headers).text
@@ -30,7 +31,5 @@ if __name__ == '__main__':
     }
     with ThreadPoolExecutor(20) as t:
         for i in range(10):
-            t.submit(download,url)
+            t.submit(download, url)
     download(url)
-
-
