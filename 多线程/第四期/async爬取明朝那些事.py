@@ -1,9 +1,10 @@
 # 每天一遍自律读书
 import asyncio
+import aiofiles
+import aiohttp
 import requests
 from lxml import etree
 import os
-from concurrent.futures import ThreadPoolExecutor
 
 
 # 1.拿到主页面源代码(不需要异步)
@@ -11,9 +12,6 @@ from concurrent.futures import ThreadPoolExecutor
 # 3.
 
 def get_cha_info(url):
-    headers = {
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-    }
     res = requests.get(url, headers=headers).text
     # 开始解析
     tree = etree.HTML(res)
@@ -31,7 +29,7 @@ def get_cha_info(url):
             real_href = url + href
             dic = {
                 'book_name': book_name,
-                'chapter_name':chapter_name,
+                'chapter_name': chapter_name,
                 'url': real_href
             }
             total_list.append(dic)
@@ -39,11 +37,30 @@ def get_cha_info(url):
     # 获取到文章标题与文章内容了
 
 
+async def download_one(url, file_path):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as res:
+            page_source = await res.text()
+            tree = etree.HTML(page_source)
+            content = "".join(tree.xpath("//div[@class='single-box clearfix entry-content']//p/text()")).strip()
+            async with aiofiles.open(file_path, mode="w", encoding='utf-8') as f:
+                await f.write(content)
+    print("下载成功!" + file_path)
+
+
 async def download(result):
+    tasks = []
     for r in result:
-        title = result['title']
-        url = result['url']  # 用来下载
-    pass
+        book_name = r['book_name']
+        title = r['chapter_name']
+        url = r['url']  # 用来下载文章内容
+        if not os.path.exists(book_name):
+            os.makedirs(book_name)  # 如果不在就创建
+        # 给出文件的真正保存路径
+        file_path = f"{book_name}/{title}.txt"
+        t = asyncio.create_task(download_one(url, file_path))
+        tasks.append(t)
+    await asyncio.wait(tasks)
 
 
 def main():
@@ -51,8 +68,11 @@ def main():
     result = get_cha_info(url)
     print(result)
     # 开始上协程
-    # asyncio.run(download(result))
+    asyncio.run(download(result))
 
 
 if __name__ == '__main__':
+    headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+    }
     main()
